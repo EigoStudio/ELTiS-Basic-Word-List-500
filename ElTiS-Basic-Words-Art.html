@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ELTiS Basic Words [Art]</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary-navy: #1a2a6c;
+            --accent-blue: #5da9e9;
+            --text-dark: #2c3e50;
+            --gray-light: #dcdde1;
+            --white: #ffffff;
+            --error-red: #e84118;
+            --success-green: #4cd137;
+            --base-font: "Hiragino Maru Gothic ProN", "Hiragino Maru Gothic Pro", "Yu Gothic", "Meiryo", sans-serif;
+        }
+
+        body {
+            font-family: var(--base-font);
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-navy);
+            color: var(--white);
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 700px;
+            width: 90%;
+            margin: 20px 0;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .progress-bar {
+            font-size: 0.9rem;
+            color: var(--primary-navy);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .word-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0 30px 0;
+        }
+
+        .word-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary-navy);
+            padding: 10px;
+            border-bottom: 3px solid var(--bg-color);
+        }
+
+        .audio-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .audio-btn:active { transform: scale(0.9); }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background: var(--white);
+            border: 2px solid var(--accent-blue);
+            padding: 20px 10px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--base-font);
+            color: var(--primary-navy);
+        }
+
+        .choice-btn:hover { background-color: #f0f7ff; transform: translateY(-2px); }
+        .choice-btn.wrong { background-color: #fab1a0; border-color: var(--error-red); color: var(--error-red); animation: shake 0.3s; }
+
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-5px);}
+            75% {transform: translateX(5px);}
+        }
+
+        #result-screen { display: none; }
+        .score-num { font-size: 3.5rem; color: var(--primary-navy); font-weight: bold; }
+        .mistake-list { text-align: left; background: #fff5f5; padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 250px; overflow-y: auto; border: 1px solid #ffcdd2; }
+        .mistake-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ffebee; }
+        .action-btn { background-color: var(--primary-navy); color: white; border: none; padding: 15px 40px; border-radius: 40px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; font-family: var(--base-font); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ELTiS Basic Words [Art]</h1>
+</header>
+
+<div class="container" id="quiz-screen">
+    <div class="progress-bar" id="progress">1 / 37</div>
+    <div class="word-container">
+        <div class="word-display" id="word-text">Loading...</div>
+        <button class="audio-btn" onclick="speakWord()" title="発音を聞く">🔊</button>
+    </div>
+    <div class="choices-grid" id="choices-container"></div>
+    <div id="feedback" style="margin-top:20px; height: 1.2em; font-weight: bold;"></div>
+</div>
+
+<div class="container" id="result-screen">
+    <h2>トレーニング終了！</h2>
+    <div>一度で正解：<span class="score-num" id="final-score">0</span> / <span id="total-count">37</span>問</div>
+    <div id="mistake-container" style="display:none;">
+        <h3 style="color: var(--error-red); margin-top:25px;">要復習リスト</h3>
+        <div class="mistake-list" id="mistake-list"></div>
+    </div>
+    <button class="action-btn" onclick="sendEmail()">Tamaki先生に結果を送信</button>
+    <button class="action-btn" style="background-color: #95a5a6;" onclick="location.reload()">もう一度挑戦する</button>
+</div>
+
+<script>
+const vocabList = [
+    // --- Art (画像内の全単語) ---
+    {w:"performing arts", a:"舞台芸術", c:["視覚芸術","抽象芸術","近代芸術"]},
+    {w:"visual arts", a:"視覚芸術", c:["舞台芸術","現代芸術","応用芸術"]},
+    {w:"aesthetics", a:"美学", c:["考古学","心理学","倫理学"]},
+    {w:"architecture", a:"建築", c:["彫刻","陶芸","絵画"]},
+    {w:"conceptual art", a:"概念芸術", c:["印象主義","表現主義","超現実主義"]},
+    {w:"Impressionism", a:"印象主義", c:["ロマン主義","象徴主義","立体派"]},
+    {w:"Surrealism", a:"超現実主義", c:["現代芸術","概念芸術","抽象芸術"]},
+    {w:"Romanticism", a:"ロマン主義", c:["前衛芸術","バロック芸術","ルネサンス芸術"]},
+    {w:"Expressionism", a:"表現主義", c:["印象主義","象徴主義","立体派"]},
+    {w:"Symbolism", a:"象徴主義", c:["超現実主義","ロマン主義","概念芸術"]},
+    {w:"Cubism", a:"立体派", c:["印象主義","表現主義","前衛芸術"]},
+    {w:"avant-garde art", a:"前衛芸術", c:["現代芸術","古典芸術","抽象芸術"]},
+    {w:"abstract art", a:"抽象芸術", c:["具象芸術","現代芸術","肖像画"]},
+    {w:"Baroque art", a:"バロック芸術", c:["ルネサンス芸術","現代芸術","前衛芸術"]},
+    {w:"Renaissance art", a:"ルネサンス芸術", c:["バロック芸術","印象主義","立体派"]},
+    {w:"contemporary art", a:"現代芸術", c:["古典芸術","古代美術","前衛芸術"]},
+    {w:"lithograph", a:"石版画", c:["水彩画","油絵","壁画"]},
+    {w:"fresco", a:"フレスコ画", c:["石版画","静物画","肖像画"]},
+    {w:"mural", a:"壁画", c:["風景画","静物画","石版画"]},
+    {w:"watercolor painting", a:"水彩画", c:["油絵","石版画","フレスコ画"]},
+    {w:"oil painting", a:"油絵", c:["水彩画","壁画","石版画"]},
+    {w:"still life painting", a:"静物画", c:["肖像画","風景画","壁画"]},
+    {w:"ceramics", a:"陶芸", c:["彫刻","建築","工芸"]},
+    {w:"pottery", a:"陶器", c:["磁器","彫刻","装飾品"]},
+    {w:"porcelain", a:"磁器", c:["陶器","工芸","化石"]},
+    {w:"sculpture", a:"彫刻", c:["建築","像","装飾品"]},
+    {w:"statue", a:"像", c:["彫刻","碑","モチーフ"]},
+    {w:"craft", a:"工芸", c:["陶芸","建築","デザイン"]},
+    {w:"ornament", a:"装飾品", c:["展示会","モチーフ","画廊"]},
+    {w:"graffiti", a:"落書き", c:["壁画","石版画","肖像画"]},
+    {w:"exhibition", a:"展示会", c:["画廊","アトリエ","聖堂"]},
+    {w:"gallery", a:"画廊", c:["大聖堂","展示会","アトリエ"]},
+    {w:"artisan", a:"職人", c:["後援者","被写体","依頼"]},
+    {w:"cathedral", a:"大聖堂", c:["画廊","アトリエ","神殿"]},
+    {w:"portrait", a:"肖像画", c:["風景画","静物画","壁画"]},
+    {w:"landscape", a:"風景画", c:["肖像画","静物画","フレスコ画"]},
+    {w:"subject", a:"被写体", c:["モチーフ","遠近法","色相"]}
+];
+
+let currentIndex = 0;
+let firstTryCorrectCount = 0;
+let isFirstTry = true;
+let mistakes = [];
+
+function speakWord() {
+    const word = vocabList[currentIndex].w;
+    const uttr = new SpeechSynthesisUtterance(word);
+    uttr.lang = 'en-US';
+    uttr.rate = 0.8; 
+    speechSynthesis.speak(uttr);
+}
+
+function loadQuestion() {
+    const current = vocabList[currentIndex];
+    document.getElementById('progress').textContent = `${currentIndex + 1} / ${vocabList.length}`;
+    document.getElementById('word-text').textContent = current.w;
+    document.getElementById('feedback').textContent = "";
+    
+    const container = document.getElementById('choices-container');
+    container.innerHTML = '';
+    isFirstTry = true;
+
+    const choices = [current.a, ...current.c].sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.onclick = () => checkAnswer(choice, current.a, btn);
+        container.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected, correct, btn) {
+    if (selected === correct) {
+        if (isFirstTry) {
+            firstTryCorrectCount++;
+            document.getElementById('feedback').style.color = "var(--success-green)";
+            document.getElementById('feedback').textContent = "Excellent!";
+        }
+        
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < vocabList.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }, 600);
+    } else {
+        if (isFirstTry) {
+            mistakes.push({w: vocabList[currentIndex].w, a: vocabList[currentIndex].a});
+            isFirstTry = false;
+        }
+        btn.classList.add('wrong');
+        document.getElementById('feedback').style.color = "var(--error-red)";
+        document.getElementById('feedback').textContent = "Try again!";
+    }
+}
+
+function showResult() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = firstTryCorrectCount;
+    document.getElementById('total-count').textContent = vocabList.length;
+
+    if (mistakes.length > 0) {
+        document.getElementById('mistake-container').style.display = 'block';
+        const listDiv = document.getElementById('mistake-list');
+        listDiv.innerHTML = mistakes.map(m => `
+            <div class="mistake-item">
+                <strong>${m.w}</strong>
+                <span>${m.a}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function sendEmail() {
+    const teacherEmail = "tamaki@eigostudio-stepforward.com";
+    const subject = encodeURIComponent("ELTiS Basic Words [Art] 語彙トレーニング結果報告");
+    
+    let mistakeText = mistakes.length > 0 
+        ? "\n\n■要復習リスト（間違えた単語）:\n" + mistakes.map(m => `・${m.w} (${m.a})`).join("\n")
+        : "\n\n完璧です！間違えた単語はありませんでした。";
+
+    const body = encodeURIComponent(`Tamaki先生へ\n\n${vocabList.length}問の語彙トレーニングを完了しました。\n\n結果: ${vocabList.length}問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
+    
+    window.location.href = `mailto:${teacherEmail}?subject=${subject}&body=${body}`;
+}
+
+window.onload = loadQuestion;
+</script>
+
+</body>
+</html>
