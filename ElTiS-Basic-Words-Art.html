@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ELTiS Basic Words [Art]</title>
+    <title>ELTiS Basic Words [Arts] 50問</title>
     <style>
         :root {
             --bg-color: #f0f4f8;
@@ -126,11 +126,11 @@
 <body>
 
 <header>
-    <h1>ELTiS Basic Words [Art]</h1>
+    <h1 id="title-display">ELTiS Basic Words [Arts] 50問</h1>
 </header>
 
 <div class="container" id="quiz-screen">
-    <div class="progress-bar" id="progress">1 / 37</div>
+    <div class="progress-bar" id="progress">1 / 50</div>
     <div class="word-container">
         <div class="word-display" id="word-text">Loading...</div>
         <button class="audio-btn" onclick="speakWord()" title="発音を聞く">🔊</button>
@@ -141,7 +141,7 @@
 
 <div class="container" id="result-screen">
     <h2>トレーニング終了！</h2>
-    <div>一度で正解：<span class="score-num" id="final-score">0</span> / <span id="total-count">37</span>問</div>
+    <div>一度で正解：<span class="score-num" id="final-score">0</span> / 50問</div>
     <div id="mistake-container" style="display:none;">
         <h3 style="color: var(--error-red); margin-top:25px;">要復習リスト</h3>
         <div class="mistake-list" id="mistake-list"></div>
@@ -152,7 +152,7 @@
 
 <script>
 const vocabList = [
-    // --- Art (画像内の全単語) ---
+    // --- 画像（IMG_3745.HEIC）芸術：全50単語 ---
     {w:"performing arts", a:"舞台芸術", c:["視覚芸術","抽象芸術","近代芸術"]},
     {w:"visual arts", a:"視覚芸術", c:["舞台芸術","現代芸術","応用芸術"]},
     {w:"aesthetics", a:"美学", c:["考古学","心理学","倫理学"]},
@@ -189,7 +189,20 @@ const vocabList = [
     {w:"cathedral", a:"大聖堂", c:["画廊","アトリエ","神殿"]},
     {w:"portrait", a:"肖像画", c:["風景画","静物画","壁画"]},
     {w:"landscape", a:"風景画", c:["肖像画","静物画","フレスコ画"]},
-    {w:"subject", a:"被写体", c:["モチーフ","遠近法","色相"]}
+    {w:"subject", a:"被写体", c:["モチーフ","遠近法","色相"]},
+    {w:"motif", a:"モチーフ", c:["被写体","構図","遠近法"]},
+    {w:"perspective", a:"遠近法", c:["歪み","明暗差","色相"]},
+    {w:"distortion", a:"歪み", c:["遠近法","彩度","明暗差"]},
+    {w:"primary color", a:"原色", c:["色調","色合い","顔料"]},
+    {w:"tone", a:"色調", c:["原色","彩度","染料"]},
+    {w:"hue", a:"色合い", c:["原色","明暗差","顔料"]},
+    {w:"intensity", a:"彩度", c:["色調","明暗差","原色"]},
+    {w:"contrast", a:"明暗差", c:["彩度","遠近法","歪み"]},
+    {w:"pigment", a:"顔料", c:["染料","油絵","フレスコ"]},
+    {w:"dye", a:"染料", c:["顔料","色相","彩度"]},
+    {w:"studio", a:"アトリエ", c:["画廊","大聖堂","展示会"]},
+    {w:"patron", a:"後援者", c:["職人","依頼","候補者"]},
+    {w:"commission", a:"依頼", c:["後援者","請願","許認可"]}
 ];
 
 let currentIndex = 0;
@@ -257,7 +270,6 @@ function showResult() {
     document.getElementById('quiz-screen').style.display = 'none';
     document.getElementById('result-screen').style.display = 'block';
     document.getElementById('final-score').textContent = firstTryCorrectCount;
-    document.getElementById('total-count').textContent = vocabList.length;
 
     if (mistakes.length > 0) {
         document.getElementById('mistake-container').style.display = 'block';
@@ -273,13 +285,14 @@ function showResult() {
 
 function sendEmail() {
     const teacherEmail = "tamaki@eigostudio-stepforward.com";
-    const subject = encodeURIComponent("ELTiS Basic Words [Art] 語彙トレーニング結果報告");
+    const totalQ = vocabList.length;
+    const subject = encodeURIComponent("ELTiS Basic Words [Arts] 語彙トレーニング結果報告");
     
     let mistakeText = mistakes.length > 0 
         ? "\n\n■要復習リスト（間違えた単語）:\n" + mistakes.map(m => `・${m.w} (${m.a})`).join("\n")
         : "\n\n完璧です！間違えた単語はありませんでした。";
 
-    const body = encodeURIComponent(`Tamaki先生へ\n\n${vocabList.length}問の語彙トレーニングを完了しました。\n\n結果: ${vocabList.length}問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
+    const body = encodeURIComponent(`Tamaki先生へ\n\n${totalQ}問の語彙トレーニングを完了しました。\n\n結果: ${totalQ}問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
     
     window.location.href = `mailto:${teacherEmail}?subject=${subject}&body=${body}`;
 }
