@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ELTiS Basic Words [Economics] 50問</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary-navy: #1a2a6c;
+            --accent-blue: #5da9e9;
+            --text-dark: #2c3e50;
+            --gray-light: #dcdde1;
+            --white: #ffffff;
+            --error-red: #e84118;
+            --success-green: #4cd137;
+            --base-font: "Hiragino Maru Gothic ProN", "Hiragino Maru Gothic Pro", "Yu Gothic", "Meiryo", sans-serif;
+        }
+
+        body {
+            font-family: var(--base-font);
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-navy);
+            color: var(--white);
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 700px;
+            width: 90%;
+            margin: 20px 0;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .progress-bar {
+            font-size: 0.9rem;
+            color: var(--primary-navy);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .word-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0 30px 0;
+        }
+
+        .word-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary-navy);
+            padding: 10px;
+            border-bottom: 3px solid var(--bg-color);
+        }
+
+        .audio-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .audio-btn:active { transform: scale(0.9); }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background: var(--white);
+            border: 2px solid var(--accent-blue);
+            padding: 20px 10px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--base-font);
+            color: var(--primary-navy);
+        }
+
+        .choice-btn:hover { background-color: #f0f7ff; transform: translateY(-2px); }
+        .choice-btn.wrong { background-color: #fab1a0; border-color: var(--error-red); color: var(--error-red); animation: shake 0.3s; }
+
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-5px);}
+            75% {transform: translateX(5px);}
+        }
+
+        #result-screen { display: none; }
+        .score-num { font-size: 3.5rem; color: var(--primary-navy); font-weight: bold; }
+        .mistake-list { text-align: left; background: #fff5f5; padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 250px; overflow-y: auto; border: 1px solid #ffcdd2; }
+        .mistake-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ffebee; }
+        .action-btn { background-color: var(--primary-navy); color: white; border: none; padding: 15px 40px; border-radius: 40px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; font-family: var(--base-font); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 id="title-display">ELTiS Basic Words [Economics] 50問</h1>
+</header>
+
+<div class="container" id="quiz-screen">
+    <div class="progress-bar" id="progress">1 / 50</div>
+    <div class="word-container">
+        <div class="word-display" id="word-text">Loading...</div>
+        <button class="audio-btn" onclick="speakWord()" title="発音を聞く">🔊</button>
+    </div>
+    <div class="choices-grid" id="choices-container"></div>
+    <div id="feedback" style="margin-top:20px; height: 1.2em; font-weight: bold;"></div>
+</div>
+
+<div class="container" id="result-screen">
+    <h2>トレーニング終了！</h2>
+    <div>一度で正解：<span class="score-num" id="final-score">0</span> / 50問</div>
+    <div id="mistake-container" style="display:none;">
+        <h3 style="color: var(--error-red); margin-top:25px;">要復習リスト</h3>
+        <div class="mistake-list" id="mistake-list"></div>
+    </div>
+    <button class="action-btn" onclick="sendEmail()">Tamaki先生に結果を送信</button>
+    <button class="action-btn" style="background-color: #95a5a6;" onclick="location.reload()">もう一度挑戦する</button>
+</div>
+
+<script>
+const vocabList = [
+    // --- 画像（IMG_3741_2.HEIC）経済学：全50単語 ---
+    {w:"microeconomics", a:"ミクロ経済学", c:["マクロ経済学","財政学","金融論"]},
+    {w:"macroeconomics", a:"マクロ経済学", c:["ミクロ経済学","統計学","会計学"]},
+    {w:"central bank", a:"中央銀行", c:["市中銀行","財務省","証券会社"]},
+    {w:"treasury", a:"財務省", c:["中央銀行","国税庁","公認会計士"]},
+    {w:"fiscal policy", a:"財政政策", c:["金融政策","通商政策","労働政策"]},
+    {w:"currency", a:"通貨", c:["国債","株券","手形"]},
+    {w:"yen appreciation", a:"円高", c:["円安","インフレ","デフレ"]},
+    {w:"yen depreciation", a:"円安", c:["円高","金利上昇","株高"]},
+    {w:"exchange rate", a:"為替相場", c:["利率","物価指数","経済成長率"]},
+    {w:"revenue", a:"歳入", c:["歳出","予算","負債"]},
+    {w:"budget", a:"予算", c:["決算","歳入","純利益"]},
+    {w:"government bond", a:"国債", c:["株式","社債","地方債"]},
+    {w:"income tax", a:"所得税", c:["消費税","法人税","関税"]},
+    {w:"consumption tax", a:"消費税", c:["所得税","固定資産税","贈与税"]},
+    {w:"corporate tax", a:"法人税", c:["個人所得税","住民税","関税"]},
+    {w:"tariff", a:"関税", c:["消費税","通関手数料","為替手数料"]},
+    {w:"debt", a:"借金", c:["資産","資本","配当"]},
+    {w:"bankruptcy", a:"倒産", c:["買収","合併","赤字"]},
+    {w:"interest rate", a:"利率", c:["為替レート","物価上昇率","失業率"]},
+    {w:"financial year", a:"会計年度", c:["四半期","暦年","有効期間"]},
+    {w:"minimum wage", a:"最低賃金", c:["平均賃金","基本給","物価水準"]},
+    {w:"free market", a:"自由市場", c:["計画経済","独占市場","保護貿易"]},
+    {w:"quarter", a:"四半期", c:["会計年度","上半期","月次"]},
+    {w:"recession", a:"不況", c:["好景気","インフレ","経済成長"]},
+    {w:"working population", a:"労働人口", c:["全人口","失業人口","生産年齢人口"]},
+    {w:"unemployment rate", a:"失業率", c:["就業率","インフレ率","経済成長率"]},
+    {w:"supply and demand", a:"需要と供給", c:["市場の均衡","価格競争","生産と消費"]},
+    {w:"market equilibrium", a:"市場の均衡", c:["価格協定","市場独占","景気後退"]},
+    {w:"economic disparity", a:"経済格差", c:["地域格差","貿易赤字","インフレギャップ"]},
+    {w:"import", a:"輸入する", c:["輸出する","通関する","投資する"]},
+    {w:"export", a:"輸出する", c:["輸入する","生産する","消費する"]},
+    {w:"stock market", a:"株式市場", c:["為替市場","債券市場","商品取引所"]},
+    {w:"share", a:"株", c:["国債","配当","社債"]},
+    {w:"shareholder", a:"株主", c:["経営者","債権者","労働者"]},
+    {w:"entrepreneur", a:"起業家", c:["投資家","株主","官僚"]},
+    {w:"capital", a:"資本", c:["負債","利益","配当"]},
+    {w:"investment", a:"投資", c:["融資","貯蓄","消費"]},
+    {w:"profit", a:"利益", c:["売上","損失","経費"]},
+    {w:"dividend", a:"配当金", c:["利息", "基本給", "資本金"]},
+    {w:"real estate", a:"不動産", c:["動産","金融資産","有価証券"]},
+    {w:"assets", a:"資産", c:["負債","純資産","費用"]},
+    {w:"liabilities", a:"負債", c:["資産","資本","利益"]},
+    {w:"balance sheet", a:"貸借対照表", c:["損益計算書","キャッシュフロー計算書","試算表"]},
+    {w:"business merger", a:"企業合併", c:["事業譲渡","株式公開","事業撤退"]},
+    {w:"monopoly", a:"独占", c:["自由競争","カルテル","寡占"]},
+    {w:"mass production", a:"大量生産", c:["受注生産","多品種少量生産","手作業"]},
+    {w:"division of labor", a:"分業", c:["一括生産","自動化","アウトソーシング"]},
+    {w:"labor union", a:"労働組合", c:["経営者団体","株主総会","業界団体"]},
+    {w:"barter", a:"物々交換", c:["現金取引","信用取引","電子決済"]},
+    {w:"bookkeeping", a:"簿記", c:["監査","財務分析","税務申告"]}
+];
+
+let currentIndex = 0;
+let firstTryCorrectCount = 0;
+let isFirstTry = true;
+let mistakes = [];
+
+function speakWord() {
+    const word = vocabList[currentIndex].w;
+    const uttr = new SpeechSynthesisUtterance(word);
+    uttr.lang = 'en-US';
+    uttr.rate = 0.8; 
+    speechSynthesis.speak(uttr);
+}
+
+function loadQuestion() {
+    const current = vocabList[currentIndex];
+    document.getElementById('progress').textContent = `${currentIndex + 1} / ${vocabList.length}`;
+    document.getElementById('word-text').textContent = current.w;
+    document.getElementById('feedback').textContent = "";
+    
+    const container = document.getElementById('choices-container');
+    container.innerHTML = '';
+    isFirstTry = true;
+
+    const choices = [current.a, ...current.c].sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.onclick = () => checkAnswer(choice, current.a, btn);
+        container.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected, correct, btn) {
+    if (selected === correct) {
+        if (isFirstTry) {
+            firstTryCorrectCount++;
+            document.getElementById('feedback').style.color = "var(--success-green)";
+            document.getElementById('feedback').textContent = "Excellent!";
+        }
+        
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < vocabList.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }, 600);
+    } else {
+        if (isFirstTry) {
+            mistakes.push({w: vocabList[currentIndex].w, a: vocabList[currentIndex].a});
+            isFirstTry = false;
+        }
+        btn.classList.add('wrong');
+        document.getElementById('feedback').style.color = "var(--error-red)";
+        document.getElementById('feedback').textContent = "Try again!";
+    }
+}
+
+function showResult() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = firstTryCorrectCount;
+
+    if (mistakes.length > 0) {
+        document.getElementById('mistake-container').style.display = 'block';
+        const listDiv = document.getElementById('mistake-list');
+        listDiv.innerHTML = mistakes.map(m => `
+            <div class="mistake-item">
+                <strong>${m.w}</strong>
+                <span>${m.a}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function sendEmail() {
+    const teacherEmail = "tamaki@eigostudio-stepforward.com";
+    const totalQ = vocabList.length;
+    const subject = encodeURIComponent("ELTiS Basic Words [Economics] 語彙トレーニング結果報告");
+    
+    let mistakeText = mistakes.length > 0 
+        ? "\n\n■要復習リスト（間違えた単語）:\n" + mistakes.map(m => `・${m.w} (${m.a})`).join("\n")
+        : "\n\n完璧です！間違えた単語はありませんでした。";
+
+    const body = encodeURIComponent(`Tamaki先生へ\n\n${totalQ}問の語彙トレーニングを完了しました。\n\n結果: ${totalQ}問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
+    
+    window.location.href = `mailto:${teacherEmail}?subject=${subject}&body=${body}`;
+}
+
+window.onload = loadQuestion;
+</script>
+
+</body>
+</html>
