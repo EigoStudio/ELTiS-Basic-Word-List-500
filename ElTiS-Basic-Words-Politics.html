@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>ELTiS Basic Words [Politics] 48問</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary-navy: #1a2a6c;
+            --accent-blue: #5da9e9;
+            --text-dark: #2c3e50;
+            --gray-light: #dcdde1;
+            --white: #ffffff;
+            --error-red: #e84118;
+            --success-green: #4cd137;
+            --base-font: "Hiragino Maru Gothic ProN", "Hiragino Maru Gothic Pro", "Yu Gothic", "Meiryo", sans-serif;
+        }
+
+        body {
+            font-family: var(--base-font);
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-navy);
+            color: var(--white);
+            width: 100%;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            max-width: 700px;
+            width: 90%;
+            margin: 20px 0;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .progress-bar {
+            font-size: 0.9rem;
+            color: var(--primary-navy);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .word-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 10px 0 30px 0;
+        }
+
+        .word-display {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary-navy);
+            padding: 10px;
+            border-bottom: 3px solid var(--bg-color);
+        }
+
+        .audio-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .audio-btn:active { transform: scale(0.9); }
+
+        .choices-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .choice-btn {
+            background: var(--white);
+            border: 2px solid var(--accent-blue);
+            padding: 20px 10px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--base-font);
+            color: var(--primary-navy);
+        }
+
+        .choice-btn:hover { background-color: #f0f7ff; transform: translateY(-2px); }
+        .choice-btn.wrong { background-color: #fab1a0; border-color: var(--error-red); color: var(--error-red); animation: shake 0.3s; }
+
+        @keyframes shake {
+            0%, 100% {transform: translateX(0);}
+            25% {transform: translateX(-5px);}
+            75% {transform: translateX(5px);}
+        }
+
+        #result-screen { display: none; }
+        .score-num { font-size: 3.5rem; color: var(--primary-navy); font-weight: bold; }
+        .mistake-list { text-align: left; background: #fff5f5; padding: 15px; border-radius: 10px; margin-top: 20px; max-height: 250px; overflow-y: auto; border: 1px solid #ffcdd2; }
+        .mistake-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #ffebee; }
+        .action-btn { background-color: var(--primary-navy); color: white; border: none; padding: 15px 40px; border-radius: 40px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; font-family: var(--base-font); }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>ELTiS Basic Words [Politics] 48問</h1>
+</header>
+
+<div class="container" id="quiz-screen">
+    <div class="progress-bar" id="progress">1 / 48</div>
+    <div class="word-container">
+        <div class="word-display" id="word-text">Loading...</div>
+        <button class="audio-btn" onclick="speakWord()" title="発音を聞く">🔊</button>
+    </div>
+    <div class="choices-grid" id="choices-container"></div>
+    <div id="feedback" style="margin-top:20px; height: 1.2em; font-weight: bold;"></div>
+</div>
+
+<div class="container" id="result-screen">
+    <h2>トレーニング終了！</h2>
+    <div>一度で正解：<span class="score-num" id="final-score">0</span> / 48問</div>
+    <div id="mistake-container" style="display:none;">
+        <h3 style="color: var(--error-red); margin-top:25px;">要復習リスト</h3>
+        <div class="mistake-list" id="mistake-list"></div>
+    </div>
+    <button class="action-btn" onclick="sendEmail()">Tamaki先生に結果を送信</button>
+    <button class="action-btn" style="background-color: #95a5a6;" onclick="location.reload()">もう一度挑戦する</button>
+</div>
+
+<script>
+const vocabList = [
+    // --- Politics Left Column ---
+    {w:"Constitution", a:"憲法", c:["条約","宣言","条項"]},
+    {w:"Bill of Rights", a:"権利章典", c:["独立宣言","人権宣言","連邦法"]},
+    {w:"amendment", a:"修正条項", c:["廃止","制定","決議"]},
+    {w:"federal government", a:"連邦政府", c:["地方自治体","州政府","亡命政府"]},
+    {w:"law", a:"法律", c:["規則","慣習","協定"]},
+    {w:"democracy", a:"民主主義", c:["社会主義","独裁政治","君主制"]},
+    {w:"oligarchy", a:"寡頭政治", c:["民主主義","貴族政治","無政府状態"]},
+    {w:"monarchy", a:"君主制", c:["共和制","立憲政治","連邦制"]},
+    {w:"anarchy", a:"無政府状態", c:["軍事政権","法治国家","独裁政治"]},
+    {w:"republic", a:"共和制", c:["絶対君主制","帝国","自治領"]},
+    {w:"dictatorship", a:"独裁政治", c:["立憲政治","議会制","直接民主制"]},
+    {w:"capitalism", a:"資本主義", c:["封建制","重商主義","共産主義"]},
+    {w:"socialism", a:"社会主義", c:["資本主義","自由主義","無政府主義"]},
+    {w:"communism", a:"共産主義", c:["民主主義","帝国主義","社会民主主義"]},
+    {w:"upper house/Senate", a:"上院", c:["下院","最高裁判所","内閣"]},
+    {w:"lower house/House of Representatives", a:"下院", c:["上院","国会","地方議会"]},
+    {w:"legislative branch", a:"立法機関", c:["行政機関","司法機関","選挙管理委員会"]},
+    {w:"Congress", a:"国会・議会", c:["最高裁判所","内閣官房","連邦捜査局"]},
+    {w:"executive branch", a:"行政機関", c:["立法機関","司法機関","監査機関"]},
+    {w:"president", a:"大統領", c:["首相","国務長官","知事"]},
+    {w:"prime minister", a:"総理大臣", c:["大統領","元首","大蔵大臣"]},
+    {w:"cabinet", a:"内閣", c:["最高裁判所","枢密院","両院協議会"]},
+    {w:"minister", a:"大臣", c:["議員","長官","大使"]},
+    {w:"bureaucracy", a:"官僚", c:["政党","有権者","裁判官"]},
+
+    // --- Politics Right Column ---
+    {w:"judiciary branch", a:"司法機関", c:["立法機関","行政機関","地方自治体"]},
+    {w:"Supreme Court", a:"最高裁判所", c:["高等裁判所","地方裁判所","家庭裁判所"]},
+    {w:"jury", a:"陪審", c:["検察官","弁護士","被告"]},
+    {w:"crime", a:"犯罪", c:["過失","非行","違憲"]},
+    {w:"guilty", a:"有罪の", c:["無罪の","容疑のある","執行猶予の"]},
+    {w:"innocent", a:"無罪の", c:["有罪の","証拠不十分の","免責の"]},
+    {w:"checks and balances", a:"抑制と平衡", c:["三権分立","中央集権","地方分権"]},
+    {w:"separation of powers", a:"三権分立", c:["権力集中","両院制","連邦制"]},
+    {w:"veto", a:"拒否権", c:["先買権","表決権","違憲審査権"]},
+    {w:"suffrage", a:"選挙権", c:["被選挙権","参政権","市民権"]},
+    {w:"voter turnout", a:"投票率", c:["支持率","開票率","当選率"]},
+    {w:"election", a:"選挙", c:["世論調査","国民投票","指名"]},
+    {w:"referendum", a:"国民投票", c:["予備選挙","住民運動","署名活動"]},
+    {w:"majority decision", a:"多数決", c:["全会一致","単独採決","代表委任"]},
+    {w:"petition", a:"請願", c:["抗議","陳情","告発"]},
+    {w:"political party", a:"政党", c:["圧力団体","労働組合","非営利組織"]},
+    {w:"conservative", a:"保守派の", c:["革新派の","中立の","極端な"]},
+    {w:"radical", a:"革新派の", c:["保守派の","穏健派の","伝統的な"]},
+    {w:"candidate", a:"候補者", c:["当選者","現職議員","有権者"]},
+    {w:"diplomacy", a:"外交", c:["内政","軍事","通商"]}
+];
+
+let currentIndex = 0;
+let firstTryCorrectCount = 0;
+let isFirstTry = true;
+let mistakes = [];
+
+function speakWord() {
+    const word = vocabList[currentIndex].w;
+    const uttr = new SpeechSynthesisUtterance(word);
+    uttr.lang = 'en-US';
+    uttr.rate = 0.8; 
+    speechSynthesis.speak(uttr);
+}
+
+function loadQuestion() {
+    const current = vocabList[currentIndex];
+    document.getElementById('progress').textContent = `${currentIndex + 1} / ${vocabList.length}`;
+    document.getElementById('word-text').textContent = current.w;
+    document.getElementById('feedback').textContent = "";
+    
+    const container = document.getElementById('choices-container');
+    container.innerHTML = '';
+    isFirstTry = true;
+
+    const choices = [current.a, ...current.c].sort(() => Math.random() - 0.5);
+
+    choices.forEach(choice => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.onclick = () => checkAnswer(choice, current.a, btn);
+        container.appendChild(btn);
+    });
+}
+
+function checkAnswer(selected, correct, btn) {
+    if (selected === correct) {
+        if (isFirstTry) {
+            firstTryCorrectCount++;
+            document.getElementById('feedback').style.color = "var(--success-green)";
+            document.getElementById('feedback').textContent = "Excellent!";
+        }
+        
+        setTimeout(() => {
+            currentIndex++;
+            if (currentIndex < vocabList.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }, 600);
+    } else {
+        if (isFirstTry) {
+            mistakes.push({w: vocabList[currentIndex].w, a: vocabList[currentIndex].a});
+            isFirstTry = false;
+        }
+        btn.classList.add('wrong');
+        document.getElementById('feedback').style.color = "var(--error-red)";
+        document.getElementById('feedback').textContent = "Try again!";
+    }
+}
+
+function showResult() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    document.getElementById('final-score').textContent = firstTryCorrectCount;
+
+    if (mistakes.length > 0) {
+        document.getElementById('mistake-container').style.display = 'block';
+        const listDiv = document.getElementById('mistake-list');
+        listDiv.innerHTML = mistakes.map(m => `
+            <div class="mistake-item">
+                <strong>${m.w}</strong>
+                <span>${m.a}</span>
+            </div>
+        `).join('');
+    }
+}
+
+function sendEmail() {
+    const teacherEmail = "tamaki@eigostudio-stepforward.com";
+    const subject = encodeURIComponent("ELTiS Basic Words [Politics] 語彙トレーニング結果報告");
+    
+    let mistakeText = mistakes.length > 0 
+        ? "\n\n■要復習リスト（間違えた単語）:\n" + mistakes.map(m => `・${m.w} (${m.a})`).join("\n")
+        : "\n\n完璧です！間違えた単語はありませんでした。";
+
+    const body = encodeURIComponent(`Tamaki先生へ\n\n48問の語彙トレーニングを完了しました。\n\n結果: 48問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
+    
+    window.location.href = `mailto:${teacherEmail}?subject=${subject}&body=${body}`;
+}
+
+window.onload = loadQuestion;
+</script>
+
+</body>
+</html>
