@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>ELTiS Basic Words [Politics] 48問</title>
+    <title>ELTiS Basic Words [Politics] 54問</title>
     <style>
         :root {
             --bg-color: #f0f4f8;
@@ -126,11 +126,11 @@
 <body>
 
 <header>
-    <h1>ELTiS Basic Words [Politics] 48問</h1>
+    <h1 id="title-display">ELTiS Basic Words [Politics]</h1>
 </header>
 
 <div class="container" id="quiz-screen">
-    <div class="progress-bar" id="progress">1 / 48</div>
+    <div class="progress-bar" id="progress">1 / --</div>
     <div class="word-container">
         <div class="word-display" id="word-text">Loading...</div>
         <button class="audio-btn" onclick="speakWord()" title="発音を聞く">🔊</button>
@@ -141,7 +141,7 @@
 
 <div class="container" id="result-screen">
     <h2>トレーニング終了！</h2>
-    <div>一度で正解：<span class="score-num" id="final-score">0</span> / 48問</div>
+    <div>一度で正解：<span class="score-num" id="final-score">0</span> / <span id="total-score-denom">--</span>問</div>
     <div id="mistake-container" style="display:none;">
         <h3 style="color: var(--error-red); margin-top:25px;">要復習リスト</h3>
         <div class="mistake-list" id="mistake-list"></div>
@@ -152,6 +152,14 @@
 
 <script>
 const vocabList = [
+    // --- 画像2枚目左上の6単語 ---
+    {w:"refugee", a:"難民", c:["移民","原住民","有権者"]},
+    {w:"immigrant", a:"移民", c:["難民","観光客","外交官"]},
+    {w:"developed country", a:"先進国", c:["発展途上国","中立国","同盟国"]},
+    {w:"developing country", a:"発展途上国", c:["先進国","加盟国","保護国"]},
+    {w:"embassy", a:"大使館", c:["領事館","議事堂","最高裁判所"]},
+    {w:"ambassador", a:"大使", c:["領事","長官","大統領"]},
+
     // --- Politics Left Column ---
     {w:"Constitution", a:"憲法", c:["条約","宣言","条項"]},
     {w:"Bill of Rights", a:"権利章典", c:["独立宣言","人権宣言","連邦法"]},
@@ -206,6 +214,12 @@ let firstTryCorrectCount = 0;
 let isFirstTry = true;
 let mistakes = [];
 
+function initQuiz() {
+    document.getElementById('title-display').textContent = `ELTiS Basic Words [Politics] ${vocabList.length}問`;
+    document.getElementById('total-score-denom').textContent = vocabList.length;
+    loadQuestion();
+}
+
 function speakWord() {
     const word = vocabList[currentIndex].w;
     const uttr = new SpeechSynthesisUtterance(word);
@@ -216,6 +230,7 @@ function speakWord() {
 
 function loadQuestion() {
     const current = vocabList[currentIndex];
+    // 動的に全問題数を分母に設定
     document.getElementById('progress').textContent = `${currentIndex + 1} / ${vocabList.length}`;
     document.getElementById('word-text').textContent = current.w;
     document.getElementById('feedback').textContent = "";
@@ -281,18 +296,19 @@ function showResult() {
 
 function sendEmail() {
     const teacherEmail = "tamaki@eigostudio-stepforward.com";
-    const subject = encodeURIComponent("ELTiS Basic Words [Politics] 語彙トレーニング結果報告");
+    const totalQ = vocabList.length;
+    const subject = encodeURIComponent(`ELTiS Basic Words [Politics] 語彙トレーニング結果報告`);
     
     let mistakeText = mistakes.length > 0 
         ? "\n\n■要復習リスト（間違えた単語）:\n" + mistakes.map(m => `・${m.w} (${m.a})`).join("\n")
         : "\n\n完璧です！間違えた単語はありませんでした。";
 
-    const body = encodeURIComponent(`Tamaki先生へ\n\n48問の語彙トレーニングを完了しました。\n\n結果: 48問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
+    const body = encodeURIComponent(`Tamaki先生へ\n\n${totalQ}問の語彙トレーニングを完了しました。\n\n結果: ${totalQ}問中 ${firstTryCorrectCount} 問を一度で正解しました。${mistakeText}\n\n次回は全問一度で正解できるよう頑張ります！`);
     
     window.location.href = `mailto:${teacherEmail}?subject=${subject}&body=${body}`;
 }
 
-window.onload = loadQuestion;
+window.onload = initQuiz;
 </script>
 
 </body>
